@@ -12,3 +12,4 @@ insert into shops (id, name, address) VALUES
 (
  4,'Летуаль', 'Париж'
 );
+set lc_monetary to "ru-RU.utf8";

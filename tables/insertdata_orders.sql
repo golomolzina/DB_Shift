@@ -18,3 +18,4 @@ insert into orders (id, shop_id, employee_id, total_amount, date) VALUES
 (
  6, 1, 4, 12560.80, '2021-03-08 07:02:01'
 );
+set lc_monetary to "ru-RU.utf8";

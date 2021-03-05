@@ -68,3 +68,4 @@ insert into product_groups (id, group_name, parent_group_id
         10,
         'рул_клеенка',
         2);
+		set lc_monetary to "ru-RU.utf8";

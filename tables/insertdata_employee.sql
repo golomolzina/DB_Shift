@@ -12,3 +12,4 @@ insert into employee (id, f, i, o, position, manager_id, shop_id) VALUES
 (5, 'Кан', 'ПЕтр', 'Александрыч', 'продавец', 2, 2);
 insert into employee (id, f, i, o, position, manager_id, shop_id) VALUES
 (6, 'Юн', 'Иван', 'Иваныч', 'продавец', 1, 3);
+set lc_monetary to "ru-RU.utf8";

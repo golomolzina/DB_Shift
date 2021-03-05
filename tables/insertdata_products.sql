@@ -30,3 +30,4 @@ VALUES
         300,
         3,
         'ткань');
+		set lc_monetary to "ru-RU.utf8";

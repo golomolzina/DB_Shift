@@ -6,3 +6,4 @@ insert into orders_items (id, order_id, product_id, quantity, quantity_type_id, 
 (
  1, 1,3,5,2,500,0, 0
 );
+set lc_monetary to "ru-RU.utf8";
