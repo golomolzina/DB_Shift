@@ -31,3 +31,4 @@ values (
     null,
     300
        );
+	   set lc_monetary to "ru-RU.utf8";
