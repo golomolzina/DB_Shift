@@ -13,4 +13,5 @@ VALUES
        (
         3,
         'м.');
+		
 set lc_monetary to "ru-RU.utf8";
