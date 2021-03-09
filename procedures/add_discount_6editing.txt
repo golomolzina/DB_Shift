@@ -1,0 +1,164 @@
+--6  Написать процедуру добавления скидки
+create or replace procedure add_discount(--6
+
+    p_date_from in timestamp,
+    p_date_to in timestamp,
+    p_type_discount in int, --определяет маркетолог
+    p_percent in int,       --определяет маркетолог
+    p_fixed_price in int, ----определяет маркетолог
+    p_product_id in integer)
+    language plpgsql
+as
+$$
+declare
+    v_found_id integer;
+    v_sum_product double precision;
+    v_updated_rows_cnt integer;
+    v_my_discount discount_info;
+begin
+    --product.price будет по скидке с учетом типа товара.
+    --сейчас собственно акцию добавляем.
+    RAISE NOTICE 'Бла бла бла  = %', p_date_from ;
+
+     -- текущая дата не из указанного промежутка, то применять эту скидку не будем
+    if ((current_date > p_date_to) or (current_date < p_date_from)) --CURDATE( )
+    then
+        RAISE exception 'акция не своевременна. Поставьте другую напоминалку';
+        return;
+    end if;
+
+    select sp.group_id
+    into v_found_id--v_my_discount.group_id
+    from shop.products sp
+    where sp.id = p_product_id;
+
+    --v_my_discount.id = def
+    v_my_discount.date_from := p_date_from;
+    v_my_discount.date_to = p_date_to;
+    v_my_discount.product_id = p_product_id;
+    v_my_discount.group_id = v_found_id;
+    v_my_discount.type_id = p_type_discount;
+    v_my_discount.percent = p_percent;
+    v_my_discount.fixed_sum = p_fixed_price;
+
+
+    --разбираем типы акций:
+    if ((p_type_discount = 3)and(p_fixed_price = NULL)) --на этот товар и процент
+    then
+        --установить на этот товар цену согласно величине скидки.
+        update products set price = price - p_percent * price
+        where (products.id = p_product_id) and ( price - p_percent * price > products.min_price);
+    end if;
+
+
+    if ((p_type_discount = 3)and(p_percent = NULL)) --на этот товар и fix
+    then
+        --установить на этот товар цену согласно величине скидки.
+        update products  set price = p_fixed_price
+        where (products.id = p_product_id) and (p_fixed_price > products.min_price);
+    end if;
+
+    --разбираем 2 типы акций:
+    if ((p_type_discount = 2)and(p_fixed_price = NULL)) --на этот товар и процент
+    then
+        --установить на этот товар цену согласно величине скидки.
+        update products set price = price - p_percent * price
+        where (products.group_id = (v_my_discount).group_id) and ( price - p_percent * price > products.min_price);
+    end if;
+
+
+    if ((p_type_discount = 2)and(p_percent = NULL)) --на этот товар и fix
+    then
+        --установить на этот товар цену согласно величине скидки.
+        update products  set price = p_fixed_price
+        where (products.group_id = (v_my_discount).group_id) and (p_fixed_price > products.min_price);
+    end if;
+
+      --разбираем 1 тип акций на всё:
+    if ((p_type_discount = 1)and(p_fixed_price = NULL)) --на этот товар и процент
+    then
+        --установить на этот товар цену согласно величине скидки.
+        update products set price = price - p_percent * price
+        where  price - p_percent * price > products.min_price;
+    end if;
+
+
+    if ((p_type_discount = 1)and(p_percent = NULL)) --на этот товар и fix
+    then
+        --установить на этот товар цену согласно величине скидки.
+        update products  set price = p_fixed_price
+        where p_fixed_price > products.min_price;
+    end if;
+    -- все _________
+    insert into discounts ( id,type_id, product_id, group_id , --надо найти
+        from_date ,  to_date ,  percent , fixed_sum) values
+    (
+     default,
+     p_type_discount,
+     p_product_id,
+     /*select(group_id) from */2,p_date_from,
+     p_date_to,
+     NULL,6 --ВЫЧИСЛЯТЬ!
+          );
+  --проверка, нашелся ли такой отвар по id
+    if v_rows_cnt = 0 then
+        raise exception 'этого товара на этом складе нет';
+    else if (v_sum_product >= p_quantity) then --его достаточно в сумме, то весь перенесем в новый склад
+            begin
+            --update shop.shops_warehouse sw set sw. ;--id же нельзя заменять...
+            insert into shop.shops_warehouse (id, shop_id, quantity)  VALUES
+            (
+                p_whouse_to_id, --навязанный id наверняка ругнется default
+                p_shop_whouse_to_id,
+                p_quantity
+                --вставили одним товаром в to
+            );
+            --удаляем все найденнные вхождения from. Заменим единой записьью с остатком:
+
+            delete from shop.shops_warehouse sw where
+                ((sw.id = p_whouse_from_id) and (sw.shop_id = p_shop_whouse_from_id) and (sw.product_id = p_product_id));
+
+                --проверка что удалились с ключевым полем whouse_from_ shop_whouse_from
+                -- если такого товара на складе магазина еще нет, добавим его
+            get diagnostics v_updated_rows_cnt = row_count;
+                if v_updated_rows_cnt > 0 then
+                    insert into shop.shops_warehouse(id, shop_id, product_id, quantity) VALUES
+                (
+                 p_whouse_from_id,
+                 p_shop_whouse_from_id,
+                 p_product_id,
+                 v_sum_product - p_quantity); --разность!!!
+                end if;
+            end;
+        else
+            raise exception 'этого товара на этом складе не достаточно';
+        end if;
+        --
+    end if;
+
+    commit; --обязательно!!!
+end;
+$$;
+
+alter procedure change_warehouse_for_product(
+    integer, --key
+    integer,--key
+    integer,
+    integer,
+    integer,
+    double precision) owner to postgres;
+
+
+do $$
+begin
+	call shop.change_warehouse_for_product(
+            p_whouse_from_id :=7, --key
+            p_shop_whouse_from_id :=3 ,--key
+
+            p_product_id :=1,
+            p_whouse_to_id :=33,
+            p_shop_whouse_to_id :=3,
+            p_quantity := 77.2
+        );
+end
+$$ language plpgsql

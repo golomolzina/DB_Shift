@@ -1,0 +1,9 @@
+--8
+do $$
+    declare
+        a shop.products_info[]; --
+begin
+        call shop.get_all_products( a );
+       select * from a; --посмотреть хочется, что в таблице. Если верить документации, то должно работать.
+end
+$$ language plpgsql
