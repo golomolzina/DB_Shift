@@ -5,7 +5,7 @@ create or replace procedure put_employee(
     p_employee_o in character varying,
     p_employee_pos in character varying,
     p_manager_id in integer,
-    p_shop_id in double precision)
+    p_shop_id in integer)
     language plpgsql
 as
 $$

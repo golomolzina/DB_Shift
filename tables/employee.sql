@@ -1,7 +1,7 @@
 -- auto-generated definition
 create table employee
 (
-    id         integer not null
+    id         serial not null
         constraint employee_pkey
             primary key,
     f          varchar,
@@ -11,7 +11,7 @@ create table employee
     manager_id integer,
     shop_id    integer
 );
-все таблицы сощздать, потом ключи внешние!!!
+--все таблицы сощздать, потом ключи внешние!!!
 
 alter table employee
     owner to postgres;

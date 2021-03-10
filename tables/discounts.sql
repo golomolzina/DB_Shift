@@ -1,7 +1,7 @@
 -- auto-generated definition
 create table discounts
 (
-    id         integer,
+    id         serial primary key,
     type_id    integer,
     product_id integer,
     group_id   integer,

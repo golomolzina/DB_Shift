@@ -1,13 +1,19 @@
---11.1  Написать процедуру для наполнения cотрудниками
-create or replace procedure insert_staff(--11.1
-    )
+--10  Написать процедуру для получения всех скидок за определенный период
+create or replace procedure get_all_discounts(--10
+    p_date_from in timestamp,
+    p_date_to in timestamp,
+    p_disconts inout discount_info[])
     language plpgsql
 as
 $$
---declare v_disconts discount_info[];
+declare v_disconts discount_info[];
 begin
-      
-    commit;
+     select array_agg((d.id, d.from_date, d.to_date, d.product_id, d.group_id, type_id, percent, fixed_sum)::discount_info)
+     into p_disconts--v_products_show
+    from shop.discounts d
+     where (p_date_to between d.from_date and d.to_date )
+     or (p_date_from between d.from_date and d.to_date );
+     commit;
 end;
 $$;
 
